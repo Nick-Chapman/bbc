@@ -2,4 +2,3 @@
 *.cabal
 *~
 stack.yaml.lock
-out
