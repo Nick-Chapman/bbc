@@ -1,0 +1,3 @@
+
+top:
+	./run-dis.sh

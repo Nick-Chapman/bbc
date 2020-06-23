@@ -12,12 +12,14 @@ extra-source-files:
 dependencies:
 - array
 - base >= 4.7 && < 5
+- bytestring
 - containers
 - ansi-terminal
 - haskeline
 - mtl
 - time
 - transformers
+- word8
 
 default-extensions:
 - BangPatterns
