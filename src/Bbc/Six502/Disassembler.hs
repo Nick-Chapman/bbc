@@ -1,9 +1,5 @@
 
-module Bbc.Six502.Disassembler (
-  displayOpLine,
-  displayOpLines,
-  ljust,
-  ) where
+module Bbc.Six502.Disassembler (displayOpLines) where
 
 import Data.Char as Char(chr)
 
