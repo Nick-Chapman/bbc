@@ -157,7 +157,7 @@ table =
   , (0x8a, TXA, Implied)
   , (0x9a, TXS, Implied)
   , (0x98, TYA, Implied)
-
+{-
   , (0xEB, SBC_extra, Immediate)
 
   , (0xA3, LAX, IndexedIndirect)
@@ -236,5 +236,5 @@ table =
   , (0x7C, NOP_7C, AbsoluteX)
   , (0xDC, NOP_DC, AbsoluteX)
   , (0xFC, NOP_FC, AbsoluteX)
-
+-}
   ]
