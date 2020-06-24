@@ -2,13 +2,7 @@
 module Top(main) where
 
 import System.Environment (getArgs)
-import Control.Monad (when)
 
-import Bbc.Addr (Addr)
-import Bbc.Rom (Rom)
-import Bbc.Six502.Decode (decode,reEncode)
-import Bbc.Six502.Disassembler (displayOpLines)
-import Bbc.Six502.Operations(Op)
 import qualified Bbc.Rom as Rom
 
 main :: IO ()
@@ -42,23 +36,12 @@ parseArgs args = loop args defaultConf where
 runConf :: Conf -> IO ()
 runConf Conf{mode} = case mode of
   Dis kind -> do
-    let spec@SpecRom{path,loadA} = specRom kind
+    let spec = specRom kind
     putStrLn $ "**disassemble... " ++ show (kind,spec)
-    rom <- Rom.load path
-    disRom loadA rom
+    rom <- Rom.load spec
+    Rom.disassemble rom
 
-data SpecRom = SpecRom { path :: FilePath, loadA :: Addr } deriving Show
-
-specRom :: RomKind -> SpecRom
+specRom :: RomKind -> Rom.Spec
 specRom = \case
-  Basic -> SpecRom { path = "roms/Basic2.rom", loadA = 0x8000 }
-  Mos -> SpecRom { path = "roms/Os12.rom", loadA = 0xC000 }
-
-disRom :: Addr -> Rom -> IO ()
-disRom addr prg = do
-  let bytes = Rom.bytes prg
-  let ops :: [Op] = decode bytes
-  let bytes' = take (length bytes) $ reEncode ops -- in case 1 or 2 extra 0s
-  when (bytes /= bytes') $ fail "re-assemble failed"
-  mapM_ putStrLn $ displayOpLines addr ops
-  return ()
+  Basic -> Rom.Spec { path = "roms/Basic2.rom", loadA = 0x8000 }
+  Mos -> Rom.Spec { path = "roms/Os12.rom", loadA = 0xC000 }

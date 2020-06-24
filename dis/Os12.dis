@@ -1,4 +1,4 @@
-**disassemble... (Mos,SpecRom {path = "roms/Os12.rom", loadA = C000})
+**disassemble... (Mos,Spec {path = "roms/Os12.rom", loadA = C000})
 C000   00                BRK
 C001   00                BRK
 C002   00                BRK
