@@ -24,14 +24,14 @@ decodeViaTable = (arr !)
   where
     arr = listArray (0,255) $ map raw_decodeViaTable [0..255]
     raw_decodeViaTable byte =
-      case mapMaybe (\(i,m,b) -> if byte==b then Just (i,m) else Nothing) OpCode.table of
+      case mapMaybe (\(b,i,m) -> if byte==b then Just (i,m) else Nothing) OpCode.table of
         [] -> Nothing
         [im] -> Just im
         ims -> error $ "decodeViaTable:" <> show byte <> " -> " <> show ims
 
 encodeViaTable :: (Instruction,Mode) -> Byte
 encodeViaTable (instruction,mode) =
-  case mapMaybe (\(i,m,b) ->
+  case mapMaybe (\(b,i,m) ->
                    if instruction==i && mode==m then Just b else Nothing) OpCode.table
   of
     [] -> error $ "encodeViaTable" <> show (instruction,mode)
