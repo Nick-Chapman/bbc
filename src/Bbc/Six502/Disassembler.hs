@@ -38,19 +38,19 @@ showInstruction = \case
 
 displayArg :: Addr -> (Mode,Arg) -> String
 displayArg at = \case
-  (Immediate,ArgByte b) -> " #$" <> show b
-  (ZeroPage,ArgByte b) -> " $" <> show b
-  (Relative,ArgByte b) -> " $" <> show (at `addAddr` (2 + byteToSigned b))
-  (Absolute,ArgAddr a) -> " $" <> show a
+  (Immediate,ArgByte b) -> " #&" <> show b
+  (ZeroPage,ArgByte b) -> " &" <> show b
+  (Relative,ArgByte b) -> " &" <> show (at `addAddr` (2 + byteToSigned b))
+  (Absolute,ArgAddr a) -> " &" <> show a
   (Implied,ArgNull) -> ""
   (Accumulator,ArgNull) -> " A"
-  (IndexedIndirect,ArgByte b) -> " ($" <> show b <> ",X)"
-  (IndirectIndexed,ArgByte b) -> " ($" <> show b <> "),Y"
-  (Indirect,ArgAddr a) -> " ($" <> show a <> ")"
-  (ZeroPageX,ArgByte b) -> " $" <> show b <> ",X"
-  (ZeroPageY,ArgByte b) -> " $" <> show b <> ",Y"
-  (AbsoluteX,ArgAddr a) -> " $" <> show a <> ",X"
-  (AbsoluteY,ArgAddr a) -> " $" <> show a <> ",Y"
+  (IndexedIndirect,ArgByte b) -> " (&" <> show b <> ",X)"
+  (IndirectIndexed,ArgByte b) -> " (&" <> show b <> "),Y"
+  (Indirect,ArgAddr a) -> " (&" <> show a <> ")"
+  (ZeroPageX,ArgByte b) -> " &" <> show b <> ",X"
+  (ZeroPageY,ArgByte b) -> " &" <> show b <> ",Y"
+  (AbsoluteX,ArgAddr a) -> " &" <> show a <> ",X"
+  (AbsoluteY,ArgAddr a) -> " &" <> show a <> ",Y"
   x -> error $ "displayArg: " <> show x
 
 unofficial :: Instruction -> Bool
