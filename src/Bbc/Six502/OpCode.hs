@@ -1,9 +1,7 @@
 
-module Bbc.Six502.OpCode (
-    table
-    ) where
+module Bbc.Six502.OpCode (table) where
 
-import Bbc.Byte(Byte)
+import Bbc.Byte (Byte)
 import Bbc.Six502.Operations (Instruction(..),Mode(..))
 
 table :: [(Instruction,Mode,Byte)]
