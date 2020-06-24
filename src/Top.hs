@@ -17,40 +17,42 @@ main = do
   let conf = parseArgs args
   runConf conf
 
+data RomKind = Basic | Mos deriving Show
+
 data Mode
-  = Disassemble6502
+  = Dis RomKind
 
 data Conf = Conf
   { mode :: Mode
-  , verbose :: Bool
-  , path :: String
   }
 
 defaultConf :: Conf
 defaultConf = Conf
-  { mode = Disassemble6502
-  , verbose = False
-  , path = "roms/Basic2.rom"
+  { mode = Dis Basic
   }
 
 parseArgs :: [String] -> Conf
 parseArgs args = loop args defaultConf where
   loop args conf = case args of
     [] -> conf
-    "-v":rest -> loop rest $ conf { verbose = True }
-    path:rest -> loop rest $ conf { path }
+    "--dis-basic":rest -> loop rest $ conf { mode = Dis Basic }
+    "--dis-mos":rest -> loop rest $ conf { mode = Dis Mos }
+    _path:_rest -> error $ "Unexpected command-line args: " ++ show args --loop rest $ conf { path }
 
 runConf :: Conf -> IO ()
-runConf Conf{mode,path} = case mode of
-  Disassemble6502 -> do
-    putStrLn $ "**disassemble... " <> path
+runConf Conf{mode} = case mode of
+  Dis kind -> do
+    let spec@SpecRom{path,loadA} = specRom kind
+    putStrLn $ "**disassemble... " ++ show (kind,spec)
     rom <- Rom.load path
-    disRom (disWhere path) rom
+    disRom loadA rom
 
-disWhere :: FilePath -> Addr
-disWhere = \case
-  "roms/Basic2.rom" -> 0x8000
-  _ -> 0xC000
+data SpecRom = SpecRom { path :: FilePath, loadA :: Addr } deriving Show
+
+specRom :: RomKind -> SpecRom
+specRom = \case
+  Basic -> SpecRom { path = "roms/Basic2.rom", loadA = 0x8000 }
+  Mos -> SpecRom { path = "roms/Os12.rom", loadA = 0xC000 }
 
 disRom :: Addr -> Rom -> IO ()
 disRom addr prg = do

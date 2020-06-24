@@ -1,4 +1,4 @@
-**disassemble... roms/Basic2.rom
+**disassemble... (Basic,SpecRom {path = "roms/Basic2.rom", loadA = 8000})
 8000   C9 01             CMP #&01
 8002   F0 1F             BEQ .L01
 8004   60                RTS
