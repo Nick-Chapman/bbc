@@ -4,36 +4,32 @@ module Bbc.Six502.Disassembler (displayOpLines) where
 import Data.Char as Char
 import Data.Set (Set)
 import Data.Map (Map)
-import Data.Maybe (isJust,fromJust)
 import Text.Printf (printf)
+import Data.List (sort,nub)
 import qualified Data.Set as Set
 import qualified Data.Map.Strict as Map
+import Data.Maybe (isJust)
 
 import Bbc.Addr (Addr,addAddr)
 import Bbc.Byte (unByte,byteToSigned)
 import Bbc.Six502.Decode (opBytes,opSize)
 import Bbc.Six502.Operations (Op(..),Instruction(..),Mode(..),Arg(..))
 
-displayOpLines :: Addr -> [Op] -> [String]
-displayOpLines baseProgram ops = lines
+displayOpLines :: Addr -> [Addr] -> [Op] -> [String]
+displayOpLines loadA startAs ops = lines
   where
     lines = [ displayOpLine aMap (reach a) a op | (a,op) <- indexedOps ]
-    indexedOps = loop baseProgram ops
+    indexedOps = loop loadA ops
     loop a = \case
       [] -> []
       op:ops -> (a,op) : loop (a `addAddr` opSize op) ops
     reach a = a `elem` reachSet
-    reachSet = reachable baseProgram indexedOps
-
-    destSet = allBranchDest [ aop | aop@(a,_) <- indexedOps, reach a]
-    aMap :: Map Addr Lab = Map.fromList $ zip (Set.toList destSet) (map Lab [1..])
+    reachSet = reachable startAs indexedOps
+    destSet = [ dest | (a,op) <- indexedOps, dest <- branchDest a op, reach dest ]
+    aMap :: Map Addr Lab = Map.fromList $ zip (sort $ nub $ destSet) (map Lab [1..])
 
 newtype Lab = Lab Int
 instance Show Lab where show (Lab i) = ".L" <> printf "%02d" i
-
-allBranchDest :: [(Addr,Op)] -> Set Addr
-allBranchDest indexedOps =
-  Set.fromList [ dest | (a,op) <- indexedOps, dest <- branchDest a op ]
 
 branchDest :: Addr -> Op -> [Addr] -- branch or jump
 branchDest at op = case op of
@@ -61,13 +57,11 @@ displayOpLine aMap reached at op = line where
 
   base = show at <> "   " <> showOpBytes op
 
-  withLabel s = if isLabel then ljust 18 s <> label else s
+  withLabel s = if reached then ljust 18 s <> label else s
   withCode s = if showCode then ljust 24 s <> asCode else s
   withText s = if showText then ljust 44 s <> asText else s
 
-  label :: String = show $ fromJust labelOpt
-  isLabel :: Bool = isJust labelOpt
-  labelOpt :: Maybe Lab = Map.lookup at aMap
+  label = case Map.lookup at aMap of Just lab -> show lab; Nothing -> "."
 
   showCode = reached || isOfficialOp
   showText = not reached && printable
@@ -91,15 +85,15 @@ displayOpLine aMap reached at op = line where
   bytesAsChars = [Char.chr $ fromIntegral $ unByte byte | byte <- opBytes op]
 
 
-reachable :: Addr -> [(Addr,Op)] -> Set Addr
-reachable baseProgram indexedOps = loop Set.empty [baseProgram]
+reachable :: [Addr] -> [(Addr,Op)] -> Set Addr
+reachable starts indexedOps = loop Set.empty starts
   where
     m :: Map Addr Op = Map.fromList indexedOps
     loop :: Set Addr -> [Addr] -> Set Addr
     loop seen = \case
       [] -> seen
       fringe -> do
-        let new = filter (not . (`Set.member` seen)) fringe
+        let new = [ a | a <- fringe, not (a `Set.member` seen), isJust $ Map.lookup a m ]
         let seen' = seen `Set.union` Set.fromList new
         let next = new >>= step
         loop seen' next

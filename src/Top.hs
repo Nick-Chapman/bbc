@@ -43,5 +43,6 @@ runConf Conf{mode} = case mode of
 
 specRom :: RomKind -> Rom.Spec
 specRom = \case
-  Basic -> Rom.Spec { path = "roms/Basic2.rom", loadA = 0x8000 }
-  Mos -> Rom.Spec { path = "roms/Os12.rom", loadA = 0xC000 }
+  Basic -> Rom.Spec { path = "roms/Basic2.rom", loadA = 0x8000, vectorExecA = [] }
+  Mos -> Rom.Spec { path = "roms/Os12.rom", loadA = 0xC000
+                  , vectorExecA = [0xFFFA, 0xFFFC, 0xFFFE] }
