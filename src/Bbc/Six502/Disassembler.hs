@@ -4,6 +4,8 @@ module Bbc.Six502.Disassembler (displayOpLines) where
 import Data.Char as Char
 import Data.Set (Set)
 import Data.Map (Map)
+import Data.Maybe (isJust,fromJust)
+import Text.Printf (printf)
 import qualified Data.Set as Set
 import qualified Data.Map.Strict as Map
 
@@ -15,7 +17,7 @@ import Bbc.Six502.Operations (Op(..),Instruction(..),Mode(..),Arg(..))
 displayOpLines :: Addr -> [Op] -> [String]
 displayOpLines baseProgram ops = lines
   where
-    lines = [ displayOpLine (reach a) a op | (a,op) <- indexedOps ]
+    lines = [ displayOpLine aMap (reach a) a op | (a,op) <- indexedOps ]
     indexedOps = loop baseProgram ops
     loop a = \case
       [] -> []
@@ -23,15 +25,49 @@ displayOpLines baseProgram ops = lines
     reach a = a `elem` reachSet
     reachSet = reachable baseProgram indexedOps
 
-displayOpLine :: Bool -> Addr -> Op -> String
-displayOpLine reached addr op = line where
+    destSet = allBranchDest [ aop | aop@(a,_) <- indexedOps, reach a]
+    aMap :: Map Addr Lab = Map.fromList $ zip (Set.toList destSet) (map Lab [1..])
 
-  line = withText (withCode base)
+newtype Lab = Lab Int
+instance Show Lab where show (Lab i) = ".L" <> printf "%02d" i
 
-  base = show addr <> "  " <> showOpBytes op
+allBranchDest :: [(Addr,Op)] -> Set Addr
+allBranchDest indexedOps =
+  Set.fromList [ dest | (a,op) <- indexedOps, dest <- branchDest a op ]
 
-  withCode s = if showCode then ljust 15 s <> asCode else s
-  withText s = if showText then ljust 30 s <> asText else s
+branchDest :: Addr -> Op -> [Addr] -- branch or jump
+branchDest at op = case op of
+  Unknown _ -> []
+  Op instr mode arg ->
+    if isBranchInstruction instr then
+      case (mode,arg) of
+        (Absolute,ArgAddr a) -> [a]
+        (Relative,ArgByte b) -> [at `addAddr` (2 + byteToSigned b)]
+        (Indirect,_) -> []
+        _ -> error $ "branchDest: " ++ show (instr,mode,arg)
+    else []
+
+isBranchInstruction :: Instruction -> Bool
+isBranchInstruction = \case
+  JMP -> t; JSR -> t; BCS -> t; BEQ -> t; BVS -> t; BMI -> t; BCC -> t; BNE -> t; BVC -> t; BPL -> t
+  _ -> False
+  where t = True
+
+
+displayOpLine :: Map Addr Lab -> Bool -> Addr -> Op -> String
+displayOpLine aMap reached at op = line where
+
+  line = withText (withCode (withLabel base))
+
+  base = show at <> "   " <> showOpBytes op
+
+  withLabel s = if isLabel then ljust 18 s <> label else s
+  withCode s = if showCode then ljust 24 s <> asCode else s
+  withText s = if showText then ljust 44 s <> asText else s
+
+  label :: String = show $ fromJust labelOpt
+  isLabel :: Bool = isJust labelOpt
+  labelOpt :: Maybe Lab = Map.lookup at aMap
 
   showCode = reached || isOfficialOp
   showText = not reached && printable
@@ -43,7 +79,11 @@ displayOpLine reached addr op = line where
     Op instruction mode rand ->
       (if unofficial instruction then "?" else " ")
       <> showInstruction instruction
-      <> displayArg addr (mode,rand)
+      <> displayArg showLabel at (mode,rand)
+
+  showLabel a = case Map.lookup a aMap of
+    Just lab -> show lab
+    Nothing -> "&" <> show a
 
   asText = show bytesAsChars
   printable = all isPrintable bytesAsChars
@@ -94,6 +134,7 @@ nextPC a op = case op of
         (Indirect,_) -> []
         _ -> error $ "nextPC: " ++ show (instr,mode,arg)
 
+
 showOpBytes :: Op -> String
 showOpBytes op = unwords $ map show $ opBytes op
 
@@ -105,12 +146,12 @@ showInstruction = \case
   SBC_extra -> "SBC"
   instruction -> if unofficialNop instruction then "NOP" else show instruction
 
-displayArg :: Addr -> (Mode,Arg) -> String
-displayArg at = \case
+displayArg :: (Addr -> String) ->Addr -> (Mode,Arg) -> String
+displayArg showLabel at = \case
   (Immediate,ArgByte b) -> " #&" <> show b
   (ZeroPage,ArgByte b) -> " &" <> show b
-  (Relative,ArgByte b) -> " &" <> show (at `addAddr` (2 + byteToSigned b))
-  (Absolute,ArgAddr a) -> " &" <> show a
+  (Relative,ArgByte b) -> " " <> showLabel (at `addAddr` (2 + byteToSigned b))
+  (Absolute,ArgAddr a) -> " " <> showLabel a
   (Implied,ArgNull) -> ""
   (Accumulator,ArgNull) -> " A"
   (IndexedIndirect,ArgByte b) -> " (&" <> show b <> ",X)"
