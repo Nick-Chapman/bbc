@@ -4,6 +4,7 @@ module Top(main) where
 import System.Environment (getArgs)
 
 import qualified Bbc.Rom as Rom
+import qualified Play(main)
 
 main :: IO ()
 main = do
@@ -15,6 +16,7 @@ data RomKind = Basic | Mos deriving Show
 
 data Mode
   = Dis RomKind
+  | Play
 
 data Conf = Conf
   { mode :: Mode
@@ -22,7 +24,7 @@ data Conf = Conf
 
 defaultConf :: Conf
 defaultConf = Conf
-  { mode = Dis Basic
+  { mode = Play
   }
 
 parseArgs :: [String] -> Conf
@@ -35,6 +37,7 @@ parseArgs args = loop args defaultConf where
 
 runConf :: Conf -> IO ()
 runConf Conf{mode} = case mode of
+  Play -> Play.main
   Dis kind -> do
     let spec = specRom kind
     putStrLn $ "**disassemble... " ++ show (kind,spec)
