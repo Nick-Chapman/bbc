@@ -1,5 +1,5 @@
 
-module Bbc.Six502.Cycles (Cycles) where
+module Bbc.Six502.Cycles (Cycles(..)) where
 
 import Text.Printf (printf)
 

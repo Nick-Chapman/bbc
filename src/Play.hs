@@ -1,9 +1,11 @@
 
 module Play(main) where -- first steps with emulation
 
+import Control.Monad (when)
+
 import Bbc.Addr (Addr(..),addAddr,addrOfHiLo)
 import Bbc.MM as MM
-import Bbc.Six502.Cycles (Cycles)
+import Bbc.Six502.Cycles (Cycles(..))
 import Bbc.Six502.Decode (decode1)
 import Bbc.Six502.Disassembler (displayOpAt)
 import Bbc.Six502.Emu (six_stepInstruction)
@@ -13,17 +15,17 @@ import qualified Bbc.Six502.Cpu as Cpu (State(..),state0)
 
 main :: MM -> IO ()
 main mm = do
-  pc0 <- MM.run mm (indirect (Addr 0xFFFC))
-  let cpu0 :: Cpu.State = Cpu.state0 pc0
   let cyc0 :: Cycles = 0
+  pc0 <- MM.run cyc0 mm (indirect (Addr 0xFFFC))
+  let cpu0 :: Cpu.State = Cpu.state0 pc0
   loop cyc0 cpu0
   where
     loop :: Cycles -> Cpu.State -> IO ()
-    loop cyc cpu = do
-      let Cpu.State{pc} = cpu
-      op <- MM.run mm (nextOp pc)
-      putStrLn $ show cyc <> " -- " <> show cpu <> " -- " <> displayOpAt pc op
-      (cpu,n) <- MM.run mm (step cpu)
+    loop cyc@Cycles{n} cpu@Cpu.State{pc} = do
+      when (n `mod` 1000000 < 6) $ do
+        op <- MM.run cyc mm (nextOp pc)
+        putStrLn $ show cyc <> " -- " <> show cpu <> " -- " <> displayOpAt pc op
+      (cpu,n) <- MM.run cyc mm (step cpu)
       cyc <- pure $ cyc + n
       loop cyc cpu
 
