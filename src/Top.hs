@@ -5,6 +5,7 @@ import System.Environment (getArgs)
 
 import qualified Bbc.Ram as Ram
 import qualified Bbc.Rom as Rom
+import qualified Bbc.Sheila as Sheila
 import Bbc.MM (MM(..))
 import qualified Play(main)
 
@@ -44,7 +45,8 @@ runConf Conf{mode} = case mode of
     rom1 <- Rom.load (specRom Basic)
     rom2 <- Rom.load (specRom Mos)
     ram <- Ram.create
-    let mm = MM {rom1,rom2,ram}
+    sheila <- Sheila.create
+    let mm = MM {rom1,rom2,ram,sheila}
     Play.main mm
   Dis kind -> do
     let spec = specRom kind

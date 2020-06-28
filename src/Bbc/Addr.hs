@@ -3,7 +3,7 @@ module Bbc.Addr(
   Addr(..),
   addAddr,
   minusAddr, zeroPageAddr, page1Addr,
-  addrOfHiLo, addrToHiLo,
+  addrOfHiLo, addrToHiLo, addrLoByte
   ) where
 
 import Data.Word (Word16)
@@ -32,7 +32,12 @@ addrOfHiLo hi lo =
   Addr (256 * fromIntegral (unByte hi) + fromIntegral (unByte lo))
 
 addrToHiLo :: Addr -> (Byte,Byte)
-addrToHiLo a = (hi,lo) where -- do it with Bits instead?
+addrToHiLo a = (hi,lo) where
   lo = byteOfInt $ n `mod` 256
   hi = byteOfInt $ n `div` 256
+  n = fromIntegral $ unAddr a
+
+addrLoByte :: Addr -> Byte
+addrLoByte a = lo where
+  lo = byteOfInt $ n `mod` 256
   n = fromIntegral $ unAddr a
