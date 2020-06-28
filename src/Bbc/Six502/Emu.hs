@@ -358,6 +358,16 @@ action pc = \case
     compareBytes a b
     return n
 
+  Op BRK Implied ArgNull -> do
+    pc <- PC
+    status <- Status
+    pushStackA pc
+    pushStack (status .|. 0x30) -- The B flag!
+    lo <- ReadMem 0xfffe
+    hi <- ReadMem 0xffff
+    SetPC $ addrOfHiLo hi lo
+    cycles 7
+
   op -> error $ unwords ["action:",show pc,show op]
 
 load :: Addr -> Mode -> Arg -> Act (Byte,Cycles)
