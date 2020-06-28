@@ -92,6 +92,7 @@ action pc = \case
 
   Op CLC Implied ArgNull -> do ClearFlag FlagCarry; cycles 2
   Op CLD Implied ArgNull -> do ClearFlag FlagDecimal; cycles 2
+  Op CLI Implied ArgNull -> do ClearFlag FlagInterruptDisable; cycles 2
   Op CLV Implied ArgNull -> do ClearFlag FlagOverflow; cycles 2
 
   Op BCS Relative (ArgByte b) -> TestFlag FlagCarry >>= branch b
