@@ -1,5 +1,6 @@
 
 module Bbc.Six502.Decode (
+  decode1,
   decode,
   reEncode,
   opBytes,
