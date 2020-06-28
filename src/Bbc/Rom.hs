@@ -1,4 +1,4 @@
-module Bbc.Rom (Spec(..),Rom,load,disassemble) where
+module Bbc.Rom (Spec(..),Rom,read,load,disassemble) where
 
 import Control.Monad (when)
 import Data.Array (Array,listArray,(!))

@@ -3,7 +3,9 @@ module Top(main) where
 
 import System.Environment (getArgs)
 
+import qualified Bbc.Ram as Ram
 import qualified Bbc.Rom as Rom
+import Bbc.MM (MM(..))
 import qualified Play(main)
 
 main :: IO ()
@@ -33,11 +35,17 @@ parseArgs args = loop args defaultConf where
     [] -> conf
     "--dis-basic":rest -> loop rest $ conf { mode = Dis Basic }
     "--dis-mos":rest -> loop rest $ conf { mode = Dis Mos }
-    _path:_rest -> error $ "Unexpected command-line args: " ++ show args --loop rest $ conf { path }
+    _path:_rest ->
+      error $ "Unexpected command-line args: " ++ show args --loop rest $ conf { path }
 
 runConf :: Conf -> IO ()
 runConf Conf{mode} = case mode of
-  Play -> Play.main
+  Play -> do
+    rom1 <- Rom.load (specRom Basic)
+    rom2 <- Rom.load (specRom Mos)
+    ram <- Ram.create
+    let mm = MM {rom1,rom2,ram}
+    Play.main mm
   Dis kind -> do
     let spec = specRom kind
     putStrLn $ "**disassemble... " ++ show (kind,spec)

@@ -22,8 +22,8 @@ state0 pc = State
   , accumulator = 0
   , xreg = 0
   , yreg = 0
-  , sp = undefined --0xFD
-  , status = undefined --0x24
+  , sp = 0xFD
+  , status = 0x24
   }
 
 instance Show State where

@@ -28,6 +28,14 @@ fetchDecodeExec = do
   action pc op
 
 
+readMem3 :: Addr -> Act [Byte]
+readMem3 addr = do
+  byte0 <- ReadMem addr
+  byte1 <- ReadMem $ addr `addAddr` 1
+  byte2 <- ReadMem $ addr `addAddr` 2
+  return [byte0,byte1,byte2]
+
+
 six_triggerNMI :: Cpu.State -> Mem.Effect Cpu.State
 six_triggerNMI cpu = do
   (cpu,()) <- interpret nmi cpu
@@ -43,13 +51,6 @@ six_triggerNMI cpu = do
       hi <- ReadMem 0xfffb
       SetPC $ addrOfHiLo hi lo
 
-
-readMem3 :: Addr -> Act [Byte]
-readMem3 addr = do
-  byte0 <- ReadMem addr
-  byte1 <- ReadMem $ addr `addAddr` 1
-  byte2 <- ReadMem $ addr `addAddr` 2
-  return [byte0,byte1,byte2]
 
 action :: Addr -> Op -> Act Cycles
 action pc = \case

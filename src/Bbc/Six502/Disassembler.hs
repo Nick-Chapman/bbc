@@ -1,5 +1,5 @@
 
-module Bbc.Six502.Disassembler (displayOpLines) where
+module Bbc.Six502.Disassembler (displayOpLines,displayOpAt) where
 
 import Data.Char as Char
 import Data.Set (Set)
@@ -14,6 +14,17 @@ import Bbc.Addr (Addr,addAddr)
 import Bbc.Byte (unByte,byteToSigned)
 import Bbc.Six502.Decode (opBytes,opSize)
 import Bbc.Six502.Operations (Op(..),Instruction(..),Mode(..),Arg(..))
+
+displayOpAt :: Addr -> Op -> String
+displayOpAt at op = base where
+  base = ljust 18 (show at <> "   " <> showOpBytes op) <> asCode
+  asCode = case op of
+    Unknown _ -> " ???"
+    Op instruction mode rand ->
+      (if unofficial instruction then "?" else " ")
+      <> showInstruction instruction
+      <> displayArg show at (mode,rand)
+
 
 displayOpLines :: Addr -> [Addr] -> [Op] -> [String]
 displayOpLines loadA startAs ops = lines
