@@ -9,7 +9,7 @@ import Bbc.Sheila (Sheila)
 import qualified Bbc.Mem as Mem (Effect(..))
 import qualified Bbc.Ram as Ram (read,write)
 import qualified Bbc.Rom as Rom (read)
-import qualified Bbc.Sheila as Sheila (write)
+import qualified Bbc.Sheila as Sheila (read,write)
 import Bbc.Six502.Cycles (Cycles)
 
 data MM = MM { rom1 :: Rom, rom2 :: Rom, ram :: Ram, sheila :: Sheila }
@@ -30,4 +30,6 @@ run cyc MM{rom1,rom2,ram,sheila} eff = loop eff
     Mem.Read a -> if
       | a < 0x8000 -> Ram.read ram (a `minusAddr` 0x0)
       | a < 0xC000 -> pure $ Rom.read rom1 (a `minusAddr` 0x8000)
+      | a >= 0xFE00 && a < 0xFEFF ->
+          Sheila.read cyc sheila (addrLoByte a)
       | otherwise -> pure $ Rom.read rom2 (a `minusAddr` 0xC000)
