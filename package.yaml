@@ -16,7 +16,12 @@ dependencies:
 - containers
 - ansi-terminal
 - haskeline
+- linear
 - mtl
+- sdl2
+- sdl2-ttf
+- split
+- text
 - time
 - transformers
 - word8
@@ -50,4 +55,8 @@ library:
 executables:
   main.exe:
     main:                app/main.hs
+    dependencies:        bbc
+
+  mode7.exe:
+    main:                app/mode7.hs
     dependencies:        bbc
