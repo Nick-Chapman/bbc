@@ -18,10 +18,10 @@ main = do
   let cw = 40 -- width of the mode-7 screen in chars
   let ch = 25 -- height of the mode-7 screen in chars
   -- how are these numbers related
-  let (size,pw,ph) = (36,19,30)
+  let (pw,ph) = (19,36)
   let w = pw*cw
   let h = ph*ch
-  font :: Font <- Font.load "assets/Acorn Full Nostalgia.ttf" size
+  font :: Font <- Font.load "assets/Acorn Full Nostalgia.ttf" ph
   win :: Window <- SDL.createWindow (Text.pack "BBC Micro, Mode 7") $ winConfig (w,h)
   screen :: Surface <- SDL.getWindowSurface win
   let
