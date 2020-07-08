@@ -26,7 +26,7 @@ read cyc Sheila{} a = do
   case a of
     0x30 -> error $ "Sheila.read, " ++ show a
     -- other Sheila reads seen so far... return 0
-    0x4E -> pure 0x0
+    0x4E -> pure 0x80
     0x4F -> pure 0x0
     0x6C -> pure 0x0
     0x40 -> pure 0x0
