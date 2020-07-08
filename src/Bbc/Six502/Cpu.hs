@@ -22,7 +22,7 @@ state0 pc = State
   , accumulator = 0
   , xreg = 0
   , yreg = 0
-  , sp = 0xFD
+  , sp = 0 --0xFD
   , status = 0x24
   }
 
