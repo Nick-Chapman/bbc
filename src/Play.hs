@@ -22,9 +22,9 @@ main mm = do
   where
     loop :: Cycles -> Cpu.State -> IO ()
     loop cyc@Cycles{n} cpu@Cpu.State{pc} = do
-      when (n > 2000010) $ do error "stop after 2 mega cycles"
-      --when True $ do
-      when (n `mod` 1000000 < 6) $ do
+      when (n > 2000000) $ do error "stop after 2 mega cycles"
+      when True $ do
+      --when (n `mod` 1000000 < 6) $ do
         op <- MM.run cyc mm (nextOp pc)
         putStrLn $ show cyc <> " -- " <> show cpu <> " -- " <> displayOpAt pc op
       (cpu,n) <- MM.run cyc mm (step cpu)
