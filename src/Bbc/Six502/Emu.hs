@@ -397,7 +397,8 @@ load pc mode arg = case (mode,arg) of
 
   (Absolute, ArgAddr a) -> do
     v <- ReadMem a
-    return (v,4)
+    let sheila = (a >= 0xFE00 && a < 0xFEFF) -- hack cycle stretch
+    return (v,if sheila then 5 else 4)
 
   (AbsoluteX, ArgAddr a) -> do
     (ea,pageCrossed) <- absoluteX a
